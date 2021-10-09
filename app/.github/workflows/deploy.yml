@@ -1,0 +1,34 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      TERRAFORM_STATE_BUCKET_NAME: ${{ secrets.TERRAFORM_STATE_BUCKET_NAME }}
+      TERRAFORM_STATE_REGION: ${{ secrets.TERRAFORM_STATE_REGION }}
+      TERRAFORM_STATE_TABLE_NAME: ${{ secrets.TERRAFORM_STATE_TABLE_NAME }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up AWS_WEB_IDENTITY_TOKEN_FILE
+        run: |
+          export AWS_WEB_IDENTITY_TOKEN_FILE=$(mktemp -d)/awscreds
+          echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+          curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+      - name: Install tfenv
+        run: |
+          git clone --depth=1 https://github.com/tfutils/tfenv.git ~/.tfenv
+          export PATH="$HOME/.tfenv/bin:$PATH"
+          echo PATH="$HOME/.tfenv/bin:$PATH" >> $GITHUB_ENV
+      - name: Deploy main branch to prod
+        run: env DEPLOY_ENV=prod make apply
