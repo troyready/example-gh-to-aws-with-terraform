@@ -5,7 +5,7 @@
 This is a brief how-to on setting up a GitHub repo to deploy to AWS. Notable features include:
 
 * Every element is configured entirely in code.
-* No static credentials are used for AWs access (via [GitHub Actions OIDC support](https://github.com/github/roadmap/issues/249))
+* No static credentials are used for AWS access (via [GitHub Actions OIDC support](https://github.com/github/roadmap/issues/249))
 * Permissions granted to the AWS deployment role are limited to only the [least amount required](https://en.wikipedia.org/wiki/Principle_of_least_privilege)
 
 ## Prereqs
